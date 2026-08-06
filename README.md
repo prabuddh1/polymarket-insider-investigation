@@ -1,12 +1,14 @@
-# Polymarket Insider Trading Investigation
+# Polymarket Informed-Trading Investigation
 
-An end-to-end investigation framework for identifying potentially informed trading behaviour on Polymarket using publicly available blockchain and market data.
+An end-to-end investigation framework for identifying **potentially informed trading behaviour** on Polymarket using publicly available market and trading data.
+
+> **Scores indicate investigative priority only. They do not establish insider trading or unlawful conduct.**
 
 ---
 
-## Live Dashboard
+# Live Dashboard
 
-**Interactive Streamlit Dashboard**
+### 🌐 Interactive Dashboard
 
 **http://32.199.252.119:8501**
 
@@ -14,47 +16,49 @@ The dashboard allows reviewers to explore:
 
 - Investigation dataset summary
 - Ranked wallets
-- Wallet-level evidence
+- Wallet drill-down
+- Wallet-market evidence
 - Market-level evidence
-- Verified public events
+- Verified public-event timing
 - Heuristic scores
 
 ---
 
-## Investigation Report
+# Investigation Report
 
-**Methodology & Findings**
+### 📄 Methodology & Findings
 
 https://docs.google.com/document/d/1GtuYEm890atdDKIq2eOP-vAyFU6Nay3x7YwkSecJHMw/edit?usp=sharing
 
 The report explains:
 
 - Investigation methodology
-- Market selection
-- Public event verification
+- Market universe construction
+- Market family selection
+- Public-event verification
 - Explainable heuristics
-- Wallet ranking methodology
+- Wallet-ranking methodology
 - Findings
 - Limitations
 
 ---
 
-## Investigation Artifacts (CSV)
+# Investigation Artifacts (CSV)
 
-All CSV outputs used during the investigation are available under:
+### 📁 CSV Outputs
 
-```
-artifacts/submission/csv/
-```
+https://github.com/prabuddh1/polymarket-insider-investigation/tree/master/artifacts/submission/csv
 
 Included artifacts:
 
 | File | Description |
 |------|-------------|
-| 01_market_scope.csv | Final investigation market universe |
-| 02_verified_public_events.csv | Public event verification timestamps |
-| 03_wallet_ranking.csv | Final wallet insider-likelihood ranking |
-| 04_wallet_market_features.csv.gz | Wallet-market feature dataset |
+| 01_market_scope.csv | Final investigation market universe (95 scoped markets) |
+| 02_verified_public_events.csv | Verified public-event timestamps and sources |
+| 03_wallet_ranking.csv | Final investigative wallet ranking |
+| 04_wallet_market_features.csv.gz | Wallet-market evidence dataset |
+
+> **Note:** `04_wallet_market_features.csv.gz` is gzip-compressed because it contains **563,715 wallet-market observations**.
 
 ---
 
@@ -64,46 +68,53 @@ The objective of this project is to investigate potential informed trading behav
 
 **November 1, 2025 – May 1, 2026**
 
-The framework does **not** attempt to prove insider trading.
-
-Instead, it identifies wallets that exhibit multiple behavioural characteristics consistent with potentially informed trading and prioritizes them for further manual investigation.
+Rather than attempting to prove insider trading, this framework identifies wallets exhibiting multiple behavioural characteristics consistent with potentially informed trading and prioritizes them for further manual investigation.
 
 ---
 
 # Investigation Pipeline
 
-```
+```text
 Polymarket Gamma API
         │
         ▼
-Collect Markets
+Collect 803,209 Market Records
         │
         ▼
-Market Normalization
+Filter Assessment Period
         │
         ▼
-Market Family Grouping
+Normalize Markets
         │
         ▼
-Representative Market Selection
+Group Markets into Families
         │
         ▼
-95 Investigation Markets
+Select Representative Markets
+        │
+        ▼
+95 Scoped Markets
+(75 Sensitive + 20 Control)
         │
         ▼
 Polymarket Data API
         │
         ▼
-Historical Trade Collection
+Collect Historical Trades
+(1,978,986 Trades)
         │
         ▼
-Wallet Feature Engineering
+Wallet-Market Feature Engineering
+(563,715 Wallet-Market Observations)
+        │
+        ▼
+Wallet-Level Behavioural Features
         │
         ▼
 Explainable Heuristic Scoring
         │
         ▼
-Ranked Wallets
+85,537 Ranked Wallets
 ```
 
 ---
@@ -113,11 +124,17 @@ Ranked Wallets
 | Metric | Value |
 |---------|------:|
 | Markets collected | **803,209** |
-| Investigation markets | **95** |
-| Historical trades collected | **448,711** |
-| Unique wallets analysed | **85,537** |
-| Wallet-market observations | **467,876** |
-| Verified public events | **3** |
+| Scoped investigation markets | **95** |
+| Sensitive markets | **75** |
+| Control markets | **20** |
+| Markets with collected trades | **94** |
+| Historical trades collected | **1,978,986** |
+| Unique wallets observed | **304,074** |
+| Wallet-market observations | **563,715** |
+| Ranked wallets | **85,537** |
+| Markets with verified public-event timing | **3** |
+
+> One scoped market contained no historical trades during collection.
 
 ---
 
@@ -126,37 +143,51 @@ Ranked Wallets
 The investigation consists of five major stages:
 
 1. Collect Polymarket market metadata.
-2. Select a representative investigation universe.
+2. Build a representative investigation universe.
 3. Collect historical trades.
-4. Engineer wallet-level behavioural features.
+4. Engineer wallet-market and wallet-level behavioural features.
 5. Rank wallets using explainable heuristics.
 
-Markets describing the same real-world event were grouped into **market families**, and the highest-volume representative market from each family was selected to avoid duplicate signals.
+Markets describing the same real-world event (for example, multiple deadline variants) were grouped into **market families**, and a representative market was selected from each family to avoid duplicate signals.
+
+Sports and other externally observable markets were retained as **control markets** for behavioural comparison.
 
 ---
 
-# Explainable Heuristics
+# Explainable Investigation Heuristics
 
-The wallet ranking combines multiple independent behavioural indicators.
+| Heuristic | Signal Used | Purpose |
+|-----------|-------------|---------|
+| Profitability | Quality-adjusted profit in sensitive markets | Prioritizes wallets with consistently profitable trading |
+| Conviction | Largest winning-position size | Rewards higher-conviction trades |
+| Low-Probability Entries | Purchases of eventual winners at low implied probabilities | Highlights unusually accurate early positioning |
+| Repeated Success | Number of profitable sensitive markets | Reduces the impact of one-off successful trades |
+| Cross-Family Activity | Number of independent market families traded | Rewards activity across unrelated events |
+| Domain Specialization | Concentration within one investigation domain | Captures focused expertise or information advantage |
+| Wallet Novelty | Limited history with unusually large positions | Flags potentially purpose-built wallets (low weight) |
+| Public-Event Timing | Entry timing relative to verified public disclosures | Strongest indicator of potentially informed trading |
+| Control-Market Comparison | Sensitive vs. control-market behaviour | Distinguishes information-driven trading from general trading skill |
 
-- Profitability
-- Conviction
-- Repeated successful outcomes
-- Low-probability winner entries
-- Purchases before verified public events
-- Domain specialization
-- Cross-market consistency
-- Control market comparison
+Individual heuristic scores are combined into a composite investigative ranking.
 
-No individual heuristic is considered evidence of insider trading.
+No single heuristic is considered evidence of insider trading.
 
-The final score is intended solely for investigative prioritization.
+---
+
+# Priority Labels
+
+| Priority | Score |
+|----------|------:|
+| High Investigative Priority | **80+** |
+| Elevated | **65–79** |
+| Review | **45–64** |
+| Low | **0–44** |
 
 ---
 
 # Repository Structure
 
-```
+```text
 app/
     dashboard.py
 
@@ -173,10 +204,11 @@ config/
 artifacts/
     submission/
         csv/
-        report/
-        README.md
-        HEURISTICS.md
-        METHODOLOGY.md
+
+README.md
+requirements.txt
+requirements-lock.txt
+pyproject.toml
 ```
 
 ---
@@ -195,6 +227,12 @@ Launch the dashboard:
 streamlit run app/dashboard.py
 ```
 
+By default, Streamlit will be available at:
+
+```
+http://localhost:8501
+```
+
 ---
 
 # Technologies
@@ -203,6 +241,7 @@ streamlit run app/dashboard.py
 - PostgreSQL
 - SQL
 - Streamlit
+- Pandas
 - Polymarket Gamma API
 - Polymarket Data API
 
@@ -210,8 +249,8 @@ streamlit run app/dashboard.py
 
 # Disclaimer
 
-This investigation uses only publicly available blockchain and market data.
+This investigation uses only publicly available market and trading data.
 
-A high investigative score should **not** be interpreted as evidence of illegal insider trading.
+A high investigative score should **not** be interpreted as evidence of illegal insider trading. Observed trading behaviour may result from legitimate research, forecasting skill, public information, or other lawful activity.
 
-The ranking framework is designed to prioritize wallets for further manual review using transparent and explainable heuristics.
+The framework is designed solely to prioritize wallets for further manual review using transparent and explainable heuristics.
