@@ -187,7 +187,7 @@ with overview_tab:
     col2.metric("Ranked Wallets", f"{len(rankings):,}")
     col3.metric("Verified Events", f"{len(events):,}")
     col4.metric("High / Elevated", high_priority_count + elevated_count)
-    col5.metric("Timing Evidence", f"{timed_wallet_count:,}")
+    col5.metric("Wallets Analyzed", f"{timed_wallet_count:,}")
 
     st.subheader("Score Distribution")
 
