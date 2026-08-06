@@ -301,6 +301,7 @@ with ranking_tab:
     display_columns = [
         "rank",
         "wallet_short",
+        "proxy_wallet",
         "total_score",
         "priority_label",
         "sensitive_markets_traded",
@@ -319,6 +320,10 @@ with ranking_tab:
         width="stretch",
         hide_index=True,
         column_config={
+            "proxy_wallet": st.column_config.TextColumn(
+                "Full Wallet Address",
+                width="large",
+            ),
             "sensitive_quality_adjusted_pnl": st.column_config.NumberColumn(
                 "Observed Sensitive PnL",
                 format="$%.2f",
@@ -385,7 +390,10 @@ with wallet_tab:
         int(wallet_row["public_event_timing_score"]),
     )
 
-    st.code(selected_wallet)
+    st.text_input(
+        "Wallet Address",
+        value=selected_wallet,
+    )
 
     with st.spinner("Loading wallet evidence..."):
         features = load_features()
