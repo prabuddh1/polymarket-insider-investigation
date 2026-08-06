@@ -320,7 +320,7 @@ with ranking_tab:
         hide_index=True,
         column_config={
             "sensitive_quality_adjusted_pnl": st.column_config.NumberColumn(
-                "Estimated sensitive PnL",
+                "Observed Sensitive PnL",
                 format="$%.2f",
             ),
             "sensitive_quality_win_rate": st.column_config.NumberColumn(
@@ -376,7 +376,7 @@ with wallet_tab:
     )
 
     metric4.metric(
-        "Estimated Sensitive PnL",
+        "Observed Sensitive PnL",
         f"${pnl_value:,.2f}" if pd.notna(pnl_value) else "N/A",
     )
 
